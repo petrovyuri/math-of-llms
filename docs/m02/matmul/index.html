@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Matrix multiplication</title>
+<link rel="stylesheet" href="../../kit/kit.css">
+<style>
+:root { --cell: 36px; }
+.mm { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: flex-start; }
+.mm__part { display: grid; gap: 6px; justify-items: start; }
+.mm__head { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
+.mm__op { align-self: center; font-size: 22px; color: var(--muted); }
+.tag { font-weight: 700; }
+.tag--a { color: var(--cyan); }
+.tag--b { color: var(--purple); }
+.tag--c { color: var(--orange); }
+.dims { color: var(--muted); font-family: ui-monospace, Consolas, monospace; }
+.dims.bad { color: var(--red); }
+.tools { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.tools__row { display: flex; gap: 4px; align-items: center; }
+.tools button { padding: 1px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<p class="eyebrow">Module 2 · lesson 1</p>
+<h1>How matrix multiplication works</h1>
+<noscript><div class="panel">The demo didn't load. Open it in a new tab.</div></noscript>
+
+<div class="panel row row--spread">
+  <div class="row" id="presets"></div>
+  <button type="button" class="btn-play" id="play">▶ step by step</button>
+</div>
+
+<div class="panel">
+  <div class="mm">
+    <section class="mm__part" aria-label="Matrix A">
+      <div class="mm__head"><span class="tag tag--a">A</span><span class="dims" id="a-dims"></span></div>
+      <div id="a-grid"></div>
+      <div class="tools" id="a-tools"></div>
+    </section>
+    <div class="mm__op" aria-hidden="true">×</div>
+    <section class="mm__part" aria-label="Matrix B">
+      <div class="mm__head"><span class="tag tag--b">B</span><span class="dims" id="b-dims"></span></div>
+      <div id="b-grid"></div>
+      <div class="tools" id="b-tools"></div>
+    </section>
+    <div class="mm__op" aria-hidden="true">=</div>
+    <section class="mm__part" aria-label="Result C">
+      <div class="mm__head"><span class="tag tag--c">C</span><span class="dims" id="c-dims"></span></div>
+      <div id="c-grid"></div>
+    </section>
+  </div>
+  <p class="caption" id="caption"></p>
+  <p class="readout" id="result" aria-live="polite"></p>
+</div>
+
+<script type="module">
+import { canMultiply, column, matmul, mismatchText, shape, shapesText, steps, transpose } from "./logic.js";
+import { listStr, num, parseNumber } from "../../kit/format.js";
+import { el, matrixView, presets, stepPlayer, ready } from "../../kit/ui.js";
+
+const MAX = 4; // up to 4 rows and columns
+const LIMIT = 99; // cell values from -99 to 99
+const PRESETS = [
+  { label: "A × B from the lesson", value: { a: [[1, 2], [3, 4]], b: [[5, 6], [7, 8]] } },
+  { label: "matrix × vector", value: { a: [[1, 2, 3], [4, 5, 6]], b: [[2], [1], [0]] } },
+  { label: "from the cheat sheet", value: { a: [[1, 2], [3, 4]], b: [[5], [6]] } },
+  { label: "shapes don't match", value: { a: [[1, 2, 3], [4, 5, 6]], b: [[1, 2], [3, 4]] } },
+];
+
+const toText = (m) => m.map((row) => row.map((x) => num(x)));
+const state = { a: toText(PRESETS[0].value.a), b: toText(PRESETS[0].value.b) };
+const caption = document.getElementById("caption");
+const result = document.getElementById("result");
+
+/** Numbers from the input fields: { a, b, valid }. */
+function numbers() {
+  const a = state.a.map((row) => row.map((t) => parseNumber(t, LIMIT)));
+  const b = state.b.map((row) => row.map((t) => parseNumber(t, LIMIT)));
+  return { a, b, valid: [...a.flat(), ...b.flat()].every((v) => v !== null) };
+}
+
+function resize(m, rows, cols) {
+  return Array.from({ length: rows }, (_, i) => Array.from({ length: cols }, (__, j) => m[i]?.[j] ?? "0"));
+}
+
+function changed() {
+  player.stop();
+  presetBar.setActive(null);
+  render();
+}
+
+const views = {
+  a: matrixView(document.getElementById("a-grid"), state.a, { editable: true, label: "A", onEdit: (i, j, t) => { state.a[i][j] = t; changed(); } }),
+  b: matrixView(document.getElementById("b-grid"), state.b, { editable: true, label: "B", onEdit: (i, j, t) => { state.b[i][j] = t; changed(); } }),
+  c: matrixView(document.getElementById("c-grid"), [], { label: "C", format: (v) => num(v) }),
+};
+
+function tools(key) {
+  const name = key.toUpperCase();
+  const change = (dRows, dCols) => () => {
+    const rows = Math.min(MAX, Math.max(1, state[key].length + dRows));
+    const cols = Math.min(MAX, Math.max(1, state[key][0].length + dCols));
+    state[key] = resize(state[key], rows, cols);
+    changed();
+  };
+  const button = (text, aria, onclick) => el("button", { type: "button", "aria-label": aria, onclick }, text);
+  document.getElementById(`${key}-tools`).append(
+    el("div", { class: "tools__row" }, "rows",
+      button("-", `Remove a row from ${name}`, change(-1, 0)), button("+", `Add a row to ${name}`, change(1, 0))),
+    el("div", { class: "tools__row" }, "columns",
+      button("-", `Remove a column from ${name}`, change(0, -1)), button("+", `Add a column to ${name}`, change(0, 1)),
+      button(`${name}ᵀ`, `Transpose ${name}`, () => { state[key] = transpose(state[key]); changed(); })),
+  );
+}
+
+/** stepIndex is the C cell shown during "▶ step by step", -1 is the normal view. */
+function render(stepIndex = -1) {
+  const { a, b, valid } = numbers();
+  views.a.set(state.a);
+  views.b.set(state.b);
+  views.a.mark("is-invalid", (i, j) => a[i][j] === null);
+  views.b.mark("is-invalid", (i, j) => b[i][j] === null);
+  for (const key of ["a", "b"]) views[key].mark("is-row", () => false);
+  for (const key of ["a", "b"]) views[key].mark("is-col", () => false);
+  document.getElementById("a-dims").textContent = `${a.length}×${a[0].length}`;
+  document.getElementById("b-dims").textContent = `${b.length}×${b[0].length}`;
+  const fits = canMultiply(a, b);
+  document.getElementById("a-dims").classList.toggle("bad", !fits);
+  document.getElementById("b-dims").classList.toggle("bad", !fits);
+  const cDims = document.getElementById("c-dims");
+
+  if (!valid || !fits) {
+    views.c.set([]);
+    cDims.textContent = "";
+    result.className = "error";
+    result.textContent = !valid
+      ? `Enter a number from -${LIMIT} to ${LIMIT} in every cell`
+      : `${mismatchText(a, b)}. Shapes: ${shapesText(a, b)}. Try transposing A or B.`;
+    return;
+  }
+
+  const c = matmul(a, b);
+  const [rows, cols] = shape(c);
+  cDims.textContent = `${rows}×${cols}`;
+  views.c.set(c.map((row, i) => row.map((v, j) => (stepIndex === -1 || i * cols + j <= stepIndex ? v : null))));
+  const r = stepIndex === -1 ? -1 : Math.floor(stepIndex / cols);
+  const k = stepIndex === -1 ? -1 : stepIndex % cols;
+  views.a.mark("is-row", (i) => i === r);
+  views.b.mark("is-col", (_, j) => j === k);
+  views.c.mark("is-hit", (i, j) => i === r && j === k);
+  result.className = "readout";
+  result.textContent = `C = ${listStr(c)}` + (cols === 1 ? `, which is the vector ${listStr(column(c, 0))}` : "");
+}
+
+const player = stepPlayer(document.getElementById("play"), {
+  steps: () => {
+    const { a, b, valid } = numbers();
+    return valid && canMultiply(a, b) ? steps(a, b) : [];
+  },
+  onStep(i, text) {
+    caption.textContent = text ?? "";
+    render(i);
+  },
+});
+
+const presetBar = presets(document.getElementById("presets"), PRESETS, (value) => {
+  player.stop();
+  state.a = toText(value.a);
+  state.b = toText(value.b);
+  render();
+});
+presetBar.setActive(0);
+
+tools("a");
+tools("b");
+render();
+ready();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+[
+ {
+  "slug": "m02/dot-product",
+  "module": 2,
+  "lesson": 1,
+  "title": "Dot product as similarity",
+  "about": "Drag two vectors and watch the dot product measure how similar they are."
+ },
+ {
+  "slug": "m02/matmul",
+  "module": 2,
+  "lesson": 1,
+  "title": "Matrix multiplication step by step",
+  "about": "Fill in C cell by cell: each cell is a row of A times a column of B."
+ },
+ {
+  "slug": "m02/tensor-shape",
+  "module": 2,
+  "lesson": 1,
+  "title": "Tensor shape and reshape",
+  "about": "See the shapes of a scalar, vector, matrix, and 3D tensor, then reshape six numbers."
+ },
+ {
+  "slug": "m02/softmax-temperature",
+  "module": 2,
+  "lesson": 2,
+  "title": "Softmax and temperature",
+  "about": "How softmax turns logits into probabilities and what temperature does to them."
+ },
+ {
+  "slug": "m02/gradient-descent",
+  "module": 2,
+  "lesson": 3,
+  "title": "Gradient descent",
+  "about": "Step down the loss parabola and see how the learning rate changes each step."
+ }
+]

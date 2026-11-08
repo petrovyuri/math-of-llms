@@ -1,0 +1,3 @@
+[
+  { "module": 2, "title": "Math mini-course", "about": "Vectors, matrix multiplication, tensor shapes, softmax, and gradient descent: the math an LLM is built on." }
+]

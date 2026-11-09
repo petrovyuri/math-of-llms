@@ -33,5 +33,33 @@
   "lesson": 3,
   "title": "Gradient descent",
   "about": "Step down the loss parabola and see how the learning rate changes each step."
+ },
+ {
+  "slug": "m03/arithmetic",
+  "module": 3,
+  "lesson": 1,
+  "title": "Boxes and operations",
+  "about": "Variables as boxes and Python operators, including errors like division by zero."
+ },
+ {
+  "slug": "m03/loop-trace",
+  "module": 3,
+  "lesson": 2,
+  "title": "Loop step by step",
+  "about": "Step through the lesson's programs with if, while, for, break, and continue, one line at a time."
+ },
+ {
+  "slug": "m03/text-to-tokens",
+  "module": 3,
+  "lesson": 3,
+  "title": "From string to tokens",
+  "about": "strip, lower, replace, and split turn a string into a list of words."
+ },
+ {
+  "slug": "m03/autograd",
+  "module": 3,
+  "lesson": 7,
+  "title": "Autograd: y = w · x",
+  "about": "PyTorch takes the derivative for you: y = w · x and y.backward()."
  }
 ]

@@ -144,10 +144,12 @@ export function check(na, ta, nb, tb) {
   return { text: `${repr(a)} == ${repr(b)} * ${repr(q)} + ${repr(r)}`, holds: a.v === b.v * q.v + r.v };
 }
 
-/** Captions for "▶ step by step": the table row and what happened. */
+/** Captions for "▶ step by step": the table row and what happened.
+ * ** binds tighter than unary minus (-7 ** 2 is -49), so a negative a gets parentheses. */
 export function captions(na, ta, nb, tb) {
   return evaluate(na, ta, nb, tb).map((row) => {
-    const expr = `${literal(na, ta)} ${row.op} ${literal(nb, tb)}`;
+    const left = literal(na, ta);
+    const expr = `${row.op === "**" && left.startsWith("-") ? `(${left})` : left} ${row.op} ${literal(nb, tb)}`;
     if (!row.ok) {
       const name = row.error.split(":")[0];
       return `${expr} raises ${name}: ${HINT[name]}`;

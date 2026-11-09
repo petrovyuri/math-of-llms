@@ -47,7 +47,7 @@ const TITLES = {
   strip: "strip() removes whitespace from both ends",
   lower: "lower() makes all letters lowercase",
   replace: 'replace("!", "") removes exclamation marks',
-  split: "split() splits the string at whitespace into a list of words",
+  split: "split() breaks the string at whitespace into a list of words",
 };
 
 /** Captions for "▶ step by step". */

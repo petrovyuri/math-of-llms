@@ -1,3 +1,4 @@
 [
-  { "module": 2, "title": "Math mini-course", "about": "Vectors, matrix multiplication, tensor shapes, softmax, and gradient descent: the math an LLM is built on." }
+  { "module": 2, "title": "Math mini-course", "about": "Vectors, matrix multiplication, tensor shapes, softmax, and gradient descent: the math an LLM is built on." },
+  { "module": 3, "title": "Python mini-course", "about": "Variables, loops, string methods, and PyTorch autograd: the Python you need for the model's code." }
 ]

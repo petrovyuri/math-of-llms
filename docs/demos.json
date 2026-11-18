@@ -61,5 +61,19 @@
   "lesson": 7,
   "title": "Autograd: y = w · x",
   "about": "PyTorch takes the derivative for you: y = w · x and y.backward()."
+ },
+ {
+  "slug": "m05/word-vocab",
+  "module": 5,
+  "lesson": 6,
+  "title": "Vocabulary, [UNK], and back to text",
+  "about": "A word vocabulary turns text into IDs and back; unknown words become [UNK]."
+ },
+ {
+  "slug": "m05/bpe-merges",
+  "module": 5,
+  "lesson": 5,
+  "title": "BPE step by step",
+  "about": "BPE on your own corpus: the most frequent symbol pairs merge one step at a time."
  }
 ]
